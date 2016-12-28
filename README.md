@@ -3,7 +3,7 @@ Simple Slack Rtm Connector with python3
 
 # Installation
 
-    pip install git+https://github.com/vazrupe/SlackConnector
+    pip install --upgrade git+https://github.com/vazrupe/SlackConnector.git
 
 # Usage
 
