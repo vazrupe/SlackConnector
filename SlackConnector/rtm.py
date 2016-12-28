@@ -7,18 +7,18 @@ from .ws import ws
 
 
 class rtm:
-    def __init__(self, token, callback=None,
+    def __init__(self, token, message_recv=None,
             on_open=None, on_close=None, on_error=None):
         self.__token = token
+
+        self.__api = Slacker(token)
+        self.__ws = ws(token)
 
         self.message_recv = message_recv
 
         self.on_open = on_open
         self.on_close = on_close
         self.on_error = on_error
-
-        self.__api = Slacker(token)
-        self.__ws = ws(token, self.message_recv)
 
         self.__message_id = 1
 
@@ -27,26 +27,20 @@ class rtm:
         return self.__api
 
     @property
-    def message_recv(self):
-        return self.__message_recv
-
-    @message_recv.setter
-    def message_recv(self, func):
-        def loader(message):
-            func(json.loads(message))
-        self.__message_recv = loader
-
-    @property
     def is_connected(self):
         return self.__ws.is_connected
 
     def connect(self, background=False):
         if self.is_connected:
             return
+
         self.__ws.on_open = self.on_open
         self.__ws.on_close = self.on_close
         self.__ws.on_error = self.on_error
-        self.__ws.message_recv = self.message_recv
+        def loader(message):
+            self.message_recv(json.loads(message))
+        self.__ws.message_recv = loader
+
         self.__ws.connect(background=background)
 
     def disconnect(self):
