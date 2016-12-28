@@ -30,7 +30,7 @@ class rtm:
     def message_recv(self):
         return self.__message_recv
 
-    @callback.setter
+    @message_recv.setter
     def message_recv(self, func):
         def loader(message):
             func(json.loads(message))
