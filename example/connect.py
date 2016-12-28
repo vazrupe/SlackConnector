@@ -4,7 +4,7 @@ from SlackConnector import rtm
 
 slack_token = 'YOUR SLACK BOT TOKEN'
 client = rtm(slack_token)
-client.callback = print
+client.message_recv = print
 
 # non-blocking
 client.connect(True)
