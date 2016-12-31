@@ -8,8 +8,6 @@ Simple Slack Rtm Connector with python3
 # Usage
 
 ```
-import time
-
 from SlackConnector import rtm
 
 slack_token = 'YOUR SLACK BOT TOKEN'
