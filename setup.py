@@ -6,7 +6,7 @@ def read(fname):
 
 setup(
     name = "SlackConnector",
-    version = "0.0.1",
+    version = "0.0.2",
     author="HyeonGyu Lee",
     author_email="vazrupe@gmail.com",
     description="Slack Rtm Client",
@@ -14,5 +14,6 @@ setup(
     keywords = "slack rtm",
     url = "https://github.com/vazrupe/SlackConnector",
     packages=['SlackConnector', ],
+    install_requires=['slacker', 'websocket-client', ],
     long_description=read('README.md')
 )
