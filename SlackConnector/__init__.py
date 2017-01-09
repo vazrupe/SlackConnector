@@ -1,3 +1,2 @@
-from .ws import ws
-from .rtm import rtm
+from .rtm import Rtm
 from .exception import ConnectorException

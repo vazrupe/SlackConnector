@@ -6,7 +6,7 @@ def read(fname):
 
 setup(
     name = "SlackConnector",
-    version = "0.0.2",
+    version = "0.0.3",
     author="HyeonGyu Lee",
     author_email="vazrupe@gmail.com",
     description="Slack Rtm Client",

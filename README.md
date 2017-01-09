@@ -8,7 +8,7 @@ Simple Slack Rtm Connector with python3
 # Usage
 
 ```
-from SlackConnector import rtm
+from SlackConnector import Rtm
 
 slack_token = 'YOUR SLACK BOT TOKEN'
 client = rtm(slack_token)
