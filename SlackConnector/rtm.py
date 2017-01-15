@@ -1,5 +1,6 @@
 import json
 import time
+import _thread
 
 from slacker import Slacker
 
@@ -35,15 +36,21 @@ class Rtm:
     def is_connected(self):
         return self.__ws.is_connected
 
-    def run_forever(self, check_connect=30, ping_check_time=5):
+    def run_forever(self, background=False, check_connect=30, ping_check_time=5):
         self.connect(background=True)
 
-        while True:
-            time.sleep(check_connect)
+        def watch_dog():
+            while True:
+                time.sleep(check_connect)
 
-            is_not_connected = not self.check_ping(ping_check_time)
-            if is_not_connected:
-                self.reconnect()
+                is_not_connected = not self.check_ping(ping_check_time)
+                if is_not_connected:
+                    self.reconnect()
+
+        if background:
+            _thread.start_new_thread(watch_dog, ())
+        else:
+            watch_dog()
 
     def check_ping(self, check_time=5):
         ok = [False]
