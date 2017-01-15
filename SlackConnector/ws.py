@@ -14,8 +14,6 @@ class ws:
         self.__api = Slacker(token)
         self.__ws = None
 
-        self.__reconnect_url = None
-
         self.message_recv = message_recv
 
         self.on_open = on_open
@@ -26,19 +24,19 @@ class ws:
     def is_connected(self):
         return self.__ws is not None
 
-    def connect(self, background=False, reconnect=False):
+    def connect(self, background=False, url=None):
         if self.is_connected:
             return
 
         if not callable(self.message_recv):
             raise ConnectorException('functions that can not be executed')
 
-        connect_url = self.__reconnect_url if reconnect else None
-        if connect_url is None:
+        if url:
+            connect_url = url
+        else:
             res = self.__api.rtm.start()
             if res.successful:
                 connect_url = res.body['url']
-                self.__reconnect_url = connect_url
                 time.sleep(1)
             else:
                 raise res.error
@@ -60,7 +58,6 @@ class ws:
             self.__ws.close()
         finally:
             self.__ws = None
-        self.__reconnect_url = None
 
     def send(self, message):
         if not self.is_connected:

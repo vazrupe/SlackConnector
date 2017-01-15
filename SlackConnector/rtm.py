@@ -1,4 +1,5 @@
 import json
+import time
 
 from slacker import Slacker
 
@@ -23,6 +24,9 @@ class Rtm:
         self.__message_id = 1
         self.__reply_callbacks = {}
 
+        self.__last_ts = 0
+        self.__reconnect_url = None
+
     @property
     def api(self):
         return self.__api
@@ -30,6 +34,27 @@ class Rtm:
     @property
     def is_connected(self):
         return self.__ws.is_connected
+
+    def run_forever(self, check_connect=30, ping_check_time=5):
+        self.connect(background=True)
+
+        while True:
+            time.sleep(check_connect)
+
+            is_not_connected = not self.check_ping(ping_check_time)
+            if is_not_connected:
+                self.reconnect()
+
+    def check_ping(self, check_time=5):
+        ok = [False]
+        def pong(reply):
+            type = reply.get('type')
+            pong
+            ok[0] = True
+        self.ping(pong)
+        time.sleep(check_time)
+
+        return ok[0]
 
     def connect(self, background=False):
         if self.is_connected:
@@ -41,10 +66,15 @@ class Rtm:
 
         def recv(message):
             msg = json.loads(message)
+
             reply_id = msg.get('reply_to')
             if reply_id is None:
                 if self.message_recv is not None:
-                    self.message_recv(msg)
+                    ts = float(msg['ts']) if 'ts' in msg else None
+                    if ts is None or ts > self.__last_ts:
+                        self.message_recv(msg)
+                    
+                    self.__fetch_system(msg)
             else:
                 if reply_id in self.__reply_callbacks:
                     self.__reply_callbacks[reply_id](msg)
@@ -53,13 +83,28 @@ class Rtm:
 
         self.__ws.connect(background=background)
 
+    def __fetch_system(self, msg):
+        ts = float(msg['ts']) if 'ts' in msg else None
+        if ts and ts > self.__last_ts:
+            self.__last_ts = ts
+
+        type = msg.get('type')
+        if type and type == 'reconnect_url':
+            self.__reconnect_url = msg['url']
+
+    def reconnect(self):
+        if self.is_connected and self.__reconnect_url:
+            self.__ws.disconnect()
+            self.__ws.connect(background=False, url=self.__reconnect_url)
+
     def disconnect(self):
         if not self.is_connected:
             return
         self.__ws.disconnect()
         self.__reply_callbacks = {}
+        self.__reconnect_url = None
 
-    def send(self, callback, type, **param):
+    def send(self, type, callback=None, **param):
         if not self.is_connected:
             raise RtmException('not connect slack websocket')
 
@@ -67,7 +112,7 @@ class Rtm:
         self.__message_id += 1
         param['id'] = id
         param['type'] = type
-        print(param)
+
         self.__ws.send(json.dumps(param))
 
         if callback is not None:
@@ -75,11 +120,11 @@ class Rtm:
             
         return id
 
-    def send_message(self, callback, channel, text):
-        return self.send(callback, type='message', channel=channel, text=text)
+    def send_message(self, channel, text, callback=None):
+        return self.send(type='message', channel=channel, text=text, callback=callback)
 
-    def typing_indicators(self, callback, channel):
-        return self.send(callback, type='typing', channel=channel)
+    def typing_indicators(self, channel, callback=None):
+        return self.send(type='typing', channel=channel, callback=callback)
 
-    def ping(self, callback):
-        return self.send(callback, type='ping')
+    def ping(self, callback=None):
+        return self.send(type='ping', callback=callback)
