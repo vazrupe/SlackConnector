@@ -8,8 +8,13 @@ from .exception import ConnectorException
 
 
 class ws:
-    def __init__(self, token, message_recv=None,
-            on_open=None, on_close=None, on_error=None):
+    def __init__(
+            self,
+            token,
+            message_recv=None,
+            on_open=None,
+            on_close=None,
+            on_error=None):
         self.__api = Slacker(token)
         self.__ws = None
 
@@ -40,10 +45,11 @@ class ws:
             else:
                 raise res.error
 
-        self.__ws = websocket.WebSocketApp(connect_url,
-            on_message = ws.event(self.message_recv),
-            on_error = self.on_error,
-            on_close = self.on_close)
+        self.__ws = websocket.WebSocketApp(
+            connect_url,
+            on_message=ws.event(self.message_recv),
+            on_error=self.on_error,
+            on_close=self.on_close)
         self.__ws.on_open = self.on_open
         if background:
             _thread.start_new_thread(self.__ws.run_forever, ())

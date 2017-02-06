@@ -9,8 +9,13 @@ from .ws import ws
 
 
 class Rtm:
-    def __init__(self, token, message_recv=None,
-            on_open=None, on_close=None, on_error=None):
+    def __init__(
+            self,
+            token,
+            message_recv=None,
+            on_open=None,
+            on_close=None,
+            on_error=None):
         self.__token = token
 
         self.__api = Slacker(token)
@@ -36,14 +41,14 @@ class Rtm:
     def is_connected(self):
         return self.__ws.is_connected
 
-    def run_forever(self, background=False, check_connect=30, ping_check_time=5):
+    def run_forever(self, background=False, check_connect=30, ping_timeout=5):
         self.connect(background=True)
 
         def watch_dog():
             while True:
                 time.sleep(check_connect)
 
-                is_not_connected = not self.check_ping(ping_check_time)
+                is_not_connected = not self.check_ping(ping_timeout)
                 if is_not_connected:
                     self.reconnect()
 
@@ -54,6 +59,7 @@ class Rtm:
 
     def check_ping(self, check_time=5):
         ok = [False]
+
         def pong(reply):
             type = reply.get('type')
             pong
@@ -80,7 +86,6 @@ class Rtm:
                     ts = float(msg['ts']) if 'ts' in msg else None
                     if ts is None or ts > self.__last_ts:
                         self.message_recv(msg)
-                    
                     self.__fetch_system(msg)
             else:
                 if reply_id in self.__reply_callbacks:
@@ -124,11 +129,15 @@ class Rtm:
 
         if callback is not None:
             self.__reply_callbacks[id] = callback
-            
         return id
 
     def send_message(self, channel, text, callback=None):
-        return self.send(type='message', channel=channel, text=text, callback=callback)
+        return self.send(
+            type='message',
+            channel=channel,
+            text=text,
+            callback=callback
+        )
 
     def typing_indicators(self, channel, callback=None):
         return self.send(type='typing', channel=channel, callback=callback)
